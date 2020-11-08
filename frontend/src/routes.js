@@ -3,43 +3,13 @@ import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import { AuthContext } from './shared/context/auth-context';
 import { useAuth } from './shared/hooks/auth-hook';
 
-const Auth = React.lazy(() => import("./Auth"));
+const Auth = React.lazy(() => import('./Auth'));
 const Layout = React.lazy(() => import('./components/Layout'));
-const Dashboard = React.lazy(() => import("./pages/Dashboard"));
-const Todo = React.lazy(() => import("./pages/Todo"));
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const Todo = React.lazy(() => import('./pages/Todo'));
 
 function Routes() {
-
   const { token, login, logout, userId } = useAuth();
-
-
-
-  console.log('token',token);
-  console.log('isLoggedIn',!!token);
-
-
-  let routes;
-  if (token) {
-    routes = (
-      <Layout>
-        <Switch>
-          <Route path='/' exact component={Dashboard} />
-          <Route path='/dashboard' exact component={Dashboard} />
-          <Route path='/:tagId' exact component={Todo} />
-          <Redirect to='/' />
-        </Switch>
-      </Layout>
-    );
-  } else {
-    routes = (
-      <Switch>
-        {/* <Route path='/auth' exact component={Auth} />
-        <Redirect to='/auth' /> */}
-           <Route path='/' exact component={Auth} />
-        <Redirect to='/' />
-      </Switch>
-    );
-  }
 
   return (
     <AuthContext.Provider
@@ -56,8 +26,20 @@ function Routes() {
           <Suspense
             fallback={<div className='center'>{/* <LoadingSpinner /> */}</div>}
           >
-            {' '}
-            {routes}
+        
+            <Switch>
+              <Route path='/auth' exact component={Auth} />
+              {token && (
+                <Layout>
+                  <Route path='/' exact component={Dashboard} />
+                  <Route path='/dashboard' exact component={Dashboard} />
+                  <Route path='/:tagId' exact component={Todo} />
+                  <Redirect to='/' />
+                </Layout>
+              )}
+              {!!token &&  <Route path='/auth'  component={Auth} />}
+            
+            </Switch>
           </Suspense>
         </main>
       </BrowserRouter>

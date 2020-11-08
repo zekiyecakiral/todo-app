@@ -101,7 +101,7 @@ const Auth = (props) => {
         );
         console.log('login ol id bu', responseData.userId,responseData.token);
         auth.login(responseData.userId, responseData.token);
-          // history.push('/');
+           history.push('/');
       } catch (err) {}
     } else {
       try {
@@ -119,7 +119,7 @@ const Auth = (props) => {
           }
         );
         auth.login(responseData.userId, responseData.token);
-        //  history.push('/');
+          history.push('/');
       } catch (err) {}
     }
   };
