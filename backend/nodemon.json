@@ -1,0 +1,9 @@
+{
+  "env": {
+    "DB_USER": "zekiye",
+    "DB_PASSWORD": "zekiyeburak",
+    "DB_NAME": "todo",
+    "JWT_KEY": "supersecret_dont_share"
+
+  }
+}
