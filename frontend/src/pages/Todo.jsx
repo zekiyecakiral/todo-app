@@ -24,7 +24,10 @@ import { useHttpClient } from '../shared/hooks/http-hook';
 import Modal from '../Modal';
 import './Todo.css';
 
+
+
 const Todo = (props) => {
+
   const [open, setOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState();
   const [update, setUpdate] = useState(false);
@@ -123,6 +126,9 @@ const Todo = (props) => {
 
   return (
 <div className="item-container">
+
+
+
   <h1>{tagName}</h1>
       <div>
         <AddCircleOutlineIcon onClick={handleClickOpen} />
@@ -180,7 +186,7 @@ const Todo = (props) => {
               <ListItemIcon>
                 <Checkbox edge='start' disableRipple />
               </ListItemIcon>
-              <ListItemText primary={item.text} secondary={item.finishAt} />
+              <ListItemText primary={item.text} secondary={item.finishAt}  />
               <ListItemSecondaryAction>
                 <IconButton
                   edge='end'

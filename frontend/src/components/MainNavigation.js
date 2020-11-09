@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import EventIcon from '@material-ui/icons/Event';
+
 import DeleteIcon from '@material-ui/icons/Delete';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import AddIcon from '@material-ui/icons/Add';
@@ -20,25 +22,28 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from '@material-ui/core';
-import useStyles from './material-styles';
+import MenuIcon from '@material-ui/icons/Menu';
+import { AppBar, CssBaseline, IconButton, Toolbar } from '@material-ui/core';
 
+import useStyles from './material-styles';
+import InputBase from '@material-ui/core/InputBase';
+import SearchIcon from '@material-ui/icons/Search';
 import { useHttpClient } from '../shared/hooks/http-hook';
 import { AuthContext } from '../shared/context/auth-context';
 import Modal from '../Modal';
-import './Sidebar.css';
+import './MainNavigation.css';
 
-function Sidebar(props, { defaultActive }) {
+function Sidebar(props) {
   const { window } = props;
   const classes = useStyles();
   const theme = useTheme();
-
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [todoText, setTodoText] = useState('');
   const { sendRequest } = useHttpClient();
-
   const [tags, setTags] = useState();
   const auth = useContext(AuthContext);
+  const history = useHistory();
 
   useEffect(() => {
     console.log('useeff');
@@ -49,25 +54,16 @@ function Sidebar(props, { defaultActive }) {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
   const handleClose = () => {
     setTodoText('');
     setOpen(false);
   };
-
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
   function handleTextFieldChange(e) {
     setTodoText(e.target.value);
   }
-  const getTagList = async (event) => {
-    const responseData = await sendRequest(
-      `${process.env.REACT_APP_BACKEND_URL}/todo/tags/${auth.userId}`
-    );
-    setTags(responseData);
-  };
-
   const submit = async (event) => {
     handleClose();
     const responseData = await sendRequest(
@@ -78,11 +74,23 @@ function Sidebar(props, { defaultActive }) {
       }),
       {
         'Content-Type': 'application/json',
-        //   Authorization: 'Bearer ' + auth.token
+        // Authorization: 'Bearer ' + auth.token
       }
     );
     let result = responseData.todo;
     setTags([...tags, result]);
+  };
+
+  const getTagList = async (event) => {
+    const responseData = await sendRequest(
+      `${process.env.REACT_APP_BACKEND_URL}/todo/tags/${auth.userId}`
+    );
+    setTags(responseData);
+  };
+
+  const logout = () => {
+    auth.logout();
+    history.push('/auth');
   };
 
   const drawer = (
@@ -120,6 +128,19 @@ function Sidebar(props, { defaultActive }) {
 
       <div className={classes.toolbar} />
       <Divider />
+      <div className={classes.search}>
+        <div className={classes.searchIcon}>
+          <SearchIcon />
+        </div>
+        <InputBase
+          placeholder='Search…'
+          classes={{
+            root: classes.inputRoot,
+            input: classes.inputInput,
+          }}
+          inputProps={{ 'aria-label': 'search' }}
+        />
+      </div>
 
       <Accordion elevation={0}>
         <AccordionSummary
@@ -140,7 +161,9 @@ function Sidebar(props, { defaultActive }) {
                     to={`/${item._id}`}
                     style={{ textDecoration: 'none', color: 'black' }}
                   >
-                    <ListItemText className='sidebar-todo'>{item.tag}</ListItemText>
+                    <ListItemText className='sidebar-todo'>
+                      {item.tag}
+                    </ListItemText>
                   </Link>
                   <ListItemIcon>
                     <DeleteIcon />
@@ -157,37 +180,61 @@ function Sidebar(props, { defaultActive }) {
     window !== undefined ? () => window().document.body : undefined;
 
   return (
-    <nav className={classes.drawer} aria-label='mailbox folders'>
-      {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-      <Hidden smUp implementation='css'>
-        <Drawer
-          container={container}
-          variant='temporary'
-          anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          classes={{
-            paper: classes.drawerPaper,
-          }}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-        >
-          {drawer}
-        </Drawer>
-      </Hidden>
-      <Hidden xsDown implementation='css'>
-        <Drawer
-          classes={{
-            paper: classes.drawerPaper,
-          }}
-          variant='permanent'
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Hidden>
-    </nav>
+    <div className={classes.root}>
+      <CssBaseline />
+      <AppBar position='fixed' className={classes.appBar}>
+        <Toolbar className='nav-todo'>
+          <div className="header-logo">
+            <IconButton
+              color='inherit'
+              aria-label='open drawer'
+              edge='start'
+              onClick={handleDrawerToggle}
+              className={classes.menuButton}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant='h6' noWrap>
+              TODO LIST
+            </Typography>
+          </div>
+          <Button color='inherit' onClick={logout}>
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
+      <nav className={classes.drawer} aria-label='mailbox folders'>
+        {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
+        <Hidden smUp implementation='css'>
+          <Drawer
+            container={container}
+            variant='temporary'
+            anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+            open={mobileOpen}
+            onClose={handleDrawerToggle}
+            classes={{
+              paper: classes.drawerPaper,
+            }}
+            ModalProps={{
+              keepMounted: true, // Better open performance on mobile.
+            }}
+          >
+            {drawer}
+          </Drawer>
+        </Hidden>
+        <Hidden xsDown implementation='css'>
+          <Drawer
+            classes={{
+              paper: classes.drawerPaper,
+            }}
+            variant='permanent'
+            open
+          >
+            {drawer}
+          </Drawer>
+        </Hidden>
+      </nav>
+    </div>
   );
 }
 

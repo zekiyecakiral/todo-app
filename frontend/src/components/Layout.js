@@ -1,14 +1,14 @@
 import React from 'react';
-import Sidebar from "./Sidebar";
-import Nav from "./Nav";
+import MainNavigation from "./MainNavigation";
+// import Nav from "./Nav";
 
 function Layout(props) {
     return (
         <div>
             <div style={{display: "flex"}}>
-                <Sidebar history={props.history}/>
+                <MainNavigation history={props.history}/>
                 <div style={{maxWidth: '800px'}}>
-                    <Nav/>
+                    {/* <Nav/> */}
                     {props.children}
                 </div>
             </div>

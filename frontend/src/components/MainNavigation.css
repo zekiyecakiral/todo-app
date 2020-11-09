@@ -1,0 +1,14 @@
+.sidebar-todo{
+    display: flex;
+    justify-content: space-between;
+    width: 200px;
+}
+.nav-todo{
+    display: flex;
+    justify-content: space-between;
+}
+.header-logo{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}

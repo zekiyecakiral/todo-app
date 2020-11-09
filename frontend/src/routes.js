@@ -26,19 +26,18 @@ function Routes() {
           <Suspense
             fallback={<div className='center'>{/* <LoadingSpinner /> */}</div>}
           >
-        
             <Switch>
-              <Route path='/auth' exact component={Auth} />
-              {token && (
+              {userId && (
                 <Layout>
+                  {console.log('userId', userId)}
                   <Route path='/' exact component={Dashboard} />
                   <Route path='/dashboard' exact component={Dashboard} />
                   <Route path='/:tagId' exact component={Todo} />
                   <Redirect to='/' />
                 </Layout>
               )}
-              {!!token &&  <Route path='/auth'  component={Auth} />}
-            
+              {!token && <Route path='/auth' component={Auth} />}
+              {!token && <Redirect to='/auth' component={Auth} />}
             </Switch>
           </Suspense>
         </main>

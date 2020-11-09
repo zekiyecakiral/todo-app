@@ -5,15 +5,9 @@ const HttpError = require('../models/http-error');
 const User = require('../models/user');
 
 const signup = async (req, res, next) => {
-
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return next(
-      new HttpError('Invalid inputs passed, please check your data.', 422)
-    );
-  }
-
-  const {  email, password } = req.body;
+  
+  const { firstName, lastName, email, password } = req.body;
+  console.log(firstName, lastName, email, password);
   let existingUser;
   try {
     existingUser = await User.findOne({ email: email });
@@ -25,12 +19,8 @@ const signup = async (req, res, next) => {
     return next(error);
   }
 
-  if (existingUser ) {
-    // for bug
-    const error = new HttpError(
-      `User exists already!!`,
-      422
-    );
+  if (existingUser) {
+    const error = new HttpError(`User exists already!`, 422);
     return next(error);
   }
   let hashedPassword;
@@ -45,14 +35,17 @@ const signup = async (req, res, next) => {
   }
 
   const createdUser = new User({
+    firstName,
+    lastName,
     email,
     password: hashedPassword,
-
   });
 
+  console.log('kaydet');
   try {
     await createdUser.save();
   } catch (err) {
+    console.log(err)
     const error = new HttpError(
       'Signing up failed, please try again later.',
       500
