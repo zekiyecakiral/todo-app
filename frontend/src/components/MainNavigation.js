@@ -1,9 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import EventIcon from '@material-ui/icons/Event';
-
-import DeleteIcon from '@material-ui/icons/Delete';
+import Tags from './Tags';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import AddIcon from '@material-ui/icons/Add';
 import {
@@ -13,10 +11,6 @@ import {
   Hidden,
   Button,
   TextField,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   Typography,
   Accordion,
   AccordionSummary,
@@ -46,7 +40,12 @@ function Sidebar(props) {
   const history = useHistory();
 
   useEffect(() => {
-    console.log('useeff');
+    const getTagList = async (event) => {
+      const responseData = await sendRequest(
+        `${process.env.REACT_APP_BACKEND_URL}/todo/tags/${auth.userId}`
+      );
+      setTags(responseData);
+    };
     getTagList();
   }, [sendRequest]);
 
@@ -64,6 +63,12 @@ function Sidebar(props) {
   function handleTextFieldChange(e) {
     setTodoText(e.target.value);
   }
+
+  const searchHandler =(e)=>{
+    console.log('serarcy',e.target.value);
+    setTags()
+
+  }
   const submit = async (event) => {
     handleClose();
     const responseData = await sendRequest(
@@ -74,23 +79,26 @@ function Sidebar(props) {
       }),
       {
         'Content-Type': 'application/json',
-        // Authorization: 'Bearer ' + auth.token
       }
     );
-    let result = responseData.todo;
-    setTags([...tags, result]);
-  };
-
-  const getTagList = async (event) => {
-    const responseData = await sendRequest(
-      `${process.env.REACT_APP_BACKEND_URL}/todo/tags/${auth.userId}`
-    );
-    setTags(responseData);
+    setTags([...tags, responseData.todo]);
   };
 
   const logout = () => {
     auth.logout();
     history.push('/auth');
+  };
+  const deleteTagHandler = async (deletedTagId) => {
+    await sendRequest(
+      `${process.env.REACT_APP_BACKEND_URL}/todo/tags/${deletedTagId}`,
+      'DELETE',
+      null,
+      {
+        Authorization: 'Bearer ' + auth.token,
+      }
+    );
+
+    setTags((prevTags) => prevTags.filter((tag) => tag._id !== deletedTagId));
   };
 
   const drawer = (
@@ -139,6 +147,7 @@ function Sidebar(props) {
             input: classes.inputInput,
           }}
           inputProps={{ 'aria-label': 'search' }}
+          onChange={searchHandler}
         />
       </div>
 
@@ -153,24 +162,7 @@ function Sidebar(props) {
         </AccordionSummary>
         <AccordionDetails>
           <Divider />
-          <List>
-            {tags &&
-              tags.map((item, index) => (
-                <ListItem button key={index}>
-                  <Link
-                    to={`/${item._id}`}
-                    style={{ textDecoration: 'none', color: 'black' }}
-                  >
-                    <ListItemText className='sidebar-todo'>
-                      {item.tag}
-                    </ListItemText>
-                  </Link>
-                  <ListItemIcon>
-                    <DeleteIcon />
-                  </ListItemIcon>
-                </ListItem>
-              ))}
-          </List>
+          <Tags tags={tags} onDeleteTag={deleteTagHandler} />
         </AccordionDetails>
       </Accordion>
     </div>
@@ -184,7 +176,7 @@ function Sidebar(props) {
       <CssBaseline />
       <AppBar position='fixed' className={classes.appBar}>
         <Toolbar className='nav-todo'>
-          <div className="header-logo">
+          <div className='header-logo'>
             <IconButton
               color='inherit'
               aria-label='open drawer'

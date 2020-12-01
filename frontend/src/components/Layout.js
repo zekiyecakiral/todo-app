@@ -5,9 +5,9 @@ import MainNavigation from "./MainNavigation";
 function Layout(props) {
     return (
         <div>
-            <div style={{display: "flex"}}>
+            <div >
                 <MainNavigation history={props.history}/>
-                <div style={{maxWidth: '800px'}}>
+                <div>
                     {/* <Nav/> */}
                     {props.children}
                 </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect ,useContext} from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Button,
@@ -10,7 +10,7 @@ import {
   ListItemSecondaryAction,
   ListItemText,
   Checkbox,
-  IconButton,
+  IconButton
 } from '@material-ui/core';
 import {
   MuiPickersUtilsProvider,
@@ -22,12 +22,12 @@ import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { useHttpClient } from '../shared/hooks/http-hook';
 import Modal from '../Modal';
+import { AuthContext } from '../shared/context/auth-context';
+
 import './Todo.css';
 
-
-
 const Todo = (props) => {
-
+  const auth = useContext(AuthContext);
   const [open, setOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState();
   const [update, setUpdate] = useState(false);
@@ -35,6 +35,7 @@ const Todo = (props) => {
     new Date('2020-11-03T21:11:54')
   );
   const [tagName,setTagName]=useState('');
+  const [isChecked,setIsChecked]=useState(false);
 
   const [todoText, setTodoText] = useState('');
 
@@ -84,8 +85,9 @@ const Todo = (props) => {
 
   const updateItem = async (event) => {
     event.preventDefault();
-
     handleClose();
+
+    console.log('update item',selectedItem);
 
     const responseData = await sendRequest(
       `${process.env.REACT_APP_BACKEND_URL}/todo/item/${selectedItem._id}`,
@@ -93,6 +95,7 @@ const Todo = (props) => {
       JSON.stringify({
         text: todoText,
         finishAt: selectedDate,
+        isChecked:isChecked
       }),
       {
         'Content-Type': 'application/json',
@@ -110,6 +113,24 @@ const Todo = (props) => {
     setUpdate(false);
   };
 
+  const deleteItem = async (event,item) => {
+    event.preventDefault();
+
+     await sendRequest(
+      `${process.env.REACT_APP_BACKEND_URL}/todo/item/${item._id}`,
+      'DELETE',
+      null,
+      {
+        Authorization: 'Bearer ' + auth.token,
+      }
+    );
+
+    setItems(prevItems =>
+      prevItems.filter(element => element._id !== item._id)
+    );
+
+  };
+
   const getItemList = async (event) => {
     const responseData = await sendRequest(
       `${process.env.REACT_APP_BACKEND_URL}/todo/${tagId}`
@@ -117,21 +138,34 @@ const Todo = (props) => {
      setItems(responseData.item);
      setTagName(responseData.tag);
   };
-  function editTodo(item) {
+  const editTodo=(item) =>{
     setTodoText(item.text);
-    setSelectedItem(item);
+   
     setUpdate(true);
     handleClickOpen();
   }
+  const checkItem = async(item)=>{
+
+      await sendRequest(
+      `${process.env.REACT_APP_BACKEND_URL}/todo/item/${item._id}`,
+      'PATCH',
+      JSON.stringify({
+        text: todoText,
+        finishAt: selectedDate,
+        isChecked:!isChecked
+      }),
+      {
+        'Content-Type': 'application/json',
+      }
+    );
+
+    setIsChecked(prev=>!prev);
+
+  
+  }
 
   return (
-<div className="item-container">
-
-
-
-  <h1>{tagName}</h1>
-      <div>
-        <AddCircleOutlineIcon onClick={handleClickOpen} />
+     <div>
         <Modal
           header={tagName}
           open={open}
@@ -177,16 +211,24 @@ const Todo = (props) => {
             </>
           }
         />
-      </div>
 
+      <div  className="card">
+      <h1>{tagName}</h1>
+      <AddCircleOutlineIcon onClick={handleClickOpen} />
       <List>
         {items &&
           items.map((item, index) => (
-            <ListItem dense button key={index} >
+            <div className=" place-item__content">
+            <ListItem dense button key={index}  >
               <ListItemIcon>
-                <Checkbox edge='start' disableRipple />
+                <Checkbox edge='start' disableRipple onClick={e=>checkItem(item)} />
               </ListItemIcon>
-              <ListItemText primary={item.text} secondary={item.finishAt}  />
+              <ListItemText primary={item.text} secondary={item.finishAt}
+              style={{
+                textDecoration:  isChecked ? 'line-through' : 'none'
+              }}
+      
+              />
               <ListItemSecondaryAction>
                 <IconButton
                   edge='end'
@@ -195,13 +237,15 @@ const Todo = (props) => {
                 >
                   <EditIcon />
                 </IconButton>
-                <IconButton edge='end' aria-label='comments'>
+                <IconButton edge='end' aria-label='comments'  onClick ={(e)=>deleteItem(e,item)} >
                   <DeleteIcon />
                 </IconButton>
               </ListItemSecondaryAction>
             </ListItem>
+            </div>
           ))}
       </List>
+      </div>
       </div>
 
   );
